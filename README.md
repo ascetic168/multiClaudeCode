@@ -60,10 +60,10 @@ To create a new configuration file:
 ### Configuration Parameters
 
 - `name`: The name of the configuration
-- `ANTHROPIC_AUTH_TOKEN`: API key for authentication
-- `ANTHROPIC_BASE_URL`: API endpoint URL
-- `ANTHROPIC_MODEL`: Main model to use
-- `ANTHROPIC_SMALL_FAST_MODEL`: Small/fast model to use
+- `ANTHROPIC_AUTH_TOKEN`: API key for authentication (optional)
+- `ANTHROPIC_BASE_URL`: API endpoint URL (optional)
+- `ANTHROPIC_MODEL`: Main model to use (optional)
+- `ANTHROPIC_SMALL_FAST_MODEL`: Small/fast model to use (optional)
 - `command`: Command to execute (default: `claude`)
 - `prompt`: Optional prompt to inject after startup
 

@@ -60,10 +60,10 @@ Multi Claude Code 視窗管理器是一個 PowerShell 指令碼，可讓您在�
 ### 設定參數說明
 
 - `name`：設定名稱
-- `ANTHROPIC_AUTH_TOKEN`：用於驗證的 API 金鑰
-- `ANTHROPIC_BASE_URL`：API 端點 URL
-- `ANTHROPIC_MODEL`：要使用的主模型
-- `ANTHROPIC_SMALL_FAST_MODEL`：要使用的小型/快速模型
+- `ANTHROPIC_AUTH_TOKEN`：用於驗證的 API 金鑰（可選）
+- `ANTHROPIC_BASE_URL`：API 端點 URL（可選）
+- `ANTHROPIC_MODEL`：要使用的主模型（可選）
+- `ANTHROPIC_SMALL_FAST_MODEL`：要使用的小型/快速模型（可選）
 - `command`：要執行的指令（預設：`claude`）
 - `prompt`：啟動後要注入的可選提示
 

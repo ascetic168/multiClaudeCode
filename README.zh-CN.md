@@ -60,10 +60,10 @@ Multi Claude Code 窗口管理器是一个 PowerShell 脚本，可让您在独�
 ### 配置参数说明
 
 - `name`：配置名称
-- `ANTHROPIC_AUTH_TOKEN`：用于认证的 API 密钥
-- `ANTHROPIC_BASE_URL`：API 端点 URL
-- `ANTHROPIC_MODEL`：要使用的主模型
-- `ANTHROPIC_SMALL_FAST_MODEL`：要使用的小型/快速模型
+- `ANTHROPIC_AUTH_TOKEN`：用于认证的 API 密钥（可选）
+- `ANTHROPIC_BASE_URL`：API 端点 URL（可选）
+- `ANTHROPIC_MODEL`：要使用的主模型（可选）
+- `ANTHROPIC_SMALL_FAST_MODEL`：要使用的小型/快速模型（可选）
 - `command`：要执行的命令（默认：`claude`）
 - `prompt`：启动后要注入的可选提示
 
