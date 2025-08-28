@@ -1,0 +1,16 @@
+# Ignore background directory
+background/
+
+# Ignore config files that may contain sensitive information
+config.json
+*/config.json
+
+# Ignore temporary files
+*.tmp
+*.temp
+~*
+.DS_Store
+Thumbs.db
+
+# Ignore PowerShell script temporary files
+*.ps1.xml
