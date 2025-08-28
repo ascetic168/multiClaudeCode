@@ -67,12 +67,21 @@ function Get-DefaultConfig {
         configurations = @(
             @{
                 name = "Claude-Default"
-                ANTHROPIC_AUTH_TOKEN = "your-api-key-here"
-                ANTHROPIC_BASE_URL = "https://api.anthropic.com"
-                ANTHROPIC_MODEL = "claude-3-5-sonnet-20241022"
-                ANTHROPIC_SMALL_FAST_MODEL = "claude-3-haiku-20240307"
+                ANTHROPIC_AUTH_TOKEN = ""
+                ANTHROPIC_BASE_URL = ""
+                ANTHROPIC_MODEL = ""
+                ANTHROPIC_SMALL_FAST_MODEL = ""
                 command = "claude"
-                prompt = ""
+                prompt = "Do nothing until I give further instructions. Always respond in Chinese."
+            },
+            @{
+                name = "DeepSeek-Default"
+                ANTHROPIC_AUTH_TOKEN = "your-api-key-here"
+                ANTHROPIC_BASE_URL = "https://api.deepseek.com/anthropic"
+                ANTHROPIC_MODEL = "deepseek-chat"
+                ANTHROPIC_SMALL_FAST_MODEL = "deepseek-chat"
+                command = "claude"
+                prompt = "Review project, give a short summary. Always respond in Chinese."
             }
         )
     }
@@ -102,8 +111,10 @@ function Read-Config {
     param([string]$ConfigPath)
     
     if (!(Test-ConfigExists -ConfigPath $ConfigPath)) {
-        Write-Error "Configuration file not found: $ConfigPath"
-        Write-Host "Use -Create parameter to create a new configuration file"
+        Write-Host "Configuration file not found: $ConfigPath"
+        Write-Host "Creating default configuration..."
+        Create-Config -ConfigPath $ConfigPath
+        Write-Host "Please edit the configuration file to add your API keys."
         return $null
     }
     
@@ -172,10 +183,10 @@ function Start-ClaudeWindow {
         $scriptContent = @"
 Import-Module PSReadLine -ErrorAction SilentlyContinue
 Set-Location '$((Get-Location).Path)'
-`$env:ANTHROPIC_AUTH_TOKEN = '$($Configuration.ANTHROPIC_AUTH_TOKEN)'
-`$env:ANTHROPIC_BASE_URL = '$($Configuration.ANTHROPIC_BASE_URL)'
-`$env:ANTHROPIC_MODEL = '$($Configuration.ANTHROPIC_MODEL)'
-`$env:ANTHROPIC_SMALL_FAST_MODEL = '$($Configuration.ANTHROPIC_SMALL_FAST_MODEL)'
+$(if ($Configuration.ANTHROPIC_AUTH_TOKEN) { "`$env:ANTHROPIC_AUTH_TOKEN = '$($Configuration.ANTHROPIC_AUTH_TOKEN)'" })
+$(if ($Configuration.ANTHROPIC_BASE_URL) { "`$env:ANTHROPIC_BASE_URL = '$($Configuration.ANTHROPIC_BASE_URL)'" })
+$(if ($Configuration.ANTHROPIC_MODEL) { "`$env:ANTHROPIC_MODEL = '$($Configuration.ANTHROPIC_MODEL)'" })
+$(if ($Configuration.ANTHROPIC_SMALL_FAST_MODEL) { "`$env:ANTHROPIC_SMALL_FAST_MODEL = '$($Configuration.ANTHROPIC_SMALL_FAST_MODEL)'" })
 cls
 $commandToExecute
 "@
@@ -301,7 +312,14 @@ if ($Help) {
     Show-Help
 }
 elseif ($List) {
-    Show-ConfigList -ConfigPath $configPath
+    if (!(Test-ConfigExists -ConfigPath $configPath)) {
+        Write-Host "Configuration file not found. Creating default configuration..."
+        Create-Config -ConfigPath $configPath
+        Write-Host "Configuration created. Opening for editing..."
+        Edit-Config -ConfigPath $configPath
+    } else {
+        Show-ConfigList -ConfigPath $configPath
+    }
 }
 elseif ($Edit) {
     Edit-Config -ConfigPath $configPath
@@ -310,12 +328,33 @@ elseif ($Create) {
     Create-Config -ConfigPath $configPath
 }
 elseif ($Name) {
-    Start-Configuration -ConfigPath $configPath -ConfigName $Name
+    if (!(Test-ConfigExists -ConfigPath $configPath)) {
+        Write-Host "Configuration file not found. Creating default configuration..."
+        Create-Config -ConfigPath $configPath
+        Write-Host "Configuration created. Please edit the file to add your API keys and then run the command again."
+        Edit-Config -ConfigPath $configPath
+    } else {
+        Start-Configuration -ConfigPath $configPath -ConfigName $Name
+    }
 }
 elseif ($U) {
-    Start-ConfigurationByIndex -ConfigPath $configPath -Index $U
+    if (!(Test-ConfigExists -ConfigPath $configPath)) {
+        Write-Host "Configuration file not found. Creating default configuration..."
+        Create-Config -ConfigPath $configPath
+        Write-Host "Configuration created. Please edit the file to add your API keys and then run the command again."
+        Edit-Config -ConfigPath $configPath
+    } else {
+        Start-ConfigurationByIndex -ConfigPath $configPath -Index $U
+    }
 }
 else {
     # No specific parameters - start all configurations
-    Start-AllConfigurations -ConfigPath $configPath
+    if (!(Test-ConfigExists -ConfigPath $configPath)) {
+        Write-Host "Configuration file not found. Creating default configuration..."
+        Create-Config -ConfigPath $configPath
+        Write-Host "Configuration created. Please edit the file to add your API keys and then run the command again."
+        Edit-Config -ConfigPath $configPath
+    } else {
+        Start-AllConfigurations -ConfigPath $configPath
+    }
 }
