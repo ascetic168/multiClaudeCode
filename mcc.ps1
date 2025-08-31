@@ -4,6 +4,7 @@ param(
     [switch]$Edit,
     [switch]$Create,
     [string]$Config,
+    [string]$Branch,
     [string]$Name,
     [int]$U
 )
@@ -20,6 +21,7 @@ function Show-Help {
     Write-Host "  .\mcc.ps1 -Edit                    Edit configuration file"
     Write-Host "  .\mcc.ps1 -Create                  Create new configuration file"
     Write-Host "  .\mcc.ps1 -Config [path]           Specify configuration file path"
+    Write-Host "  .\mcc.ps1 -Branch [name]           Switch/create worktree and execute specified configuration"
     Write-Host "  .\mcc.ps1 -Name [name]             Execute specified configuration"
     Write-Host "  .\mcc.ps1 -U [index]               Execute configuration by index (1-based)"
     Write-Host ""
@@ -226,16 +228,17 @@ function Send-Prompt {
     param([string]$Prompt)
     
     try {
+        # Use clipboard to avoid encoding issues with SendKeys
+        Set-Clipboard -Value $Prompt
+        
         Add-Type -AssemblyName System.Windows.Forms
         Start-Sleep -Seconds 2
         
-        # Escape special characters for SendKeys
-        $escapedPrompt = $Prompt -replace '([+^%~()])', '{$1}'
+        # Send Ctrl+V to paste from clipboard
+        [System.Windows.Forms.SendKeys]::SendWait('^v')
+        [System.Windows.Forms.SendKeys]::SendWait('{ENTER}')
         
-        [System.Windows.Forms.SendKeys]::SendWait($escapedPrompt)
-        [System.Windows.Forms.SendKeys]::SendWait("{ENTER}")
-        
-        Write-Host "Prompt injected"
+        Write-Host "Prompt injected via clipboard"
     }
     catch {
         Write-Warning "Cannot inject prompt: $($_.Exception.Message)"
@@ -326,6 +329,69 @@ elseif ($Edit) {
 }
 elseif ($Create) {
     Create-Config -ConfigPath $configPath
+}
+elseif ($Branch) {
+    $worktreePath = Join-Path (Get-Location).Path "..\$Branch"
+    
+    if (Test-Path $worktreePath) {
+        Write-Host "Directory for branch '$Branch' exists. Switching..."
+        try {
+            Set-Location $worktreePath
+            Write-Host "Switched to directory: $(Get-Location)"
+            git switch $Branch
+        } catch {
+            Write-Error "Failed to switch to worktree or branch '$Branch'. Error: $_"
+            return
+        }
+    } else {
+        Write-Host "Directory '$worktreePath' not found."
+        
+        # Prune stale worktrees first to prevent errors from leftover git metadata.
+        Write-Host "Running 'git worktree prune' to clean up stale references..."
+        try {
+            git worktree prune
+        } catch {
+            Write-Warning "Could not run 'git worktree prune'. This may cause issues if there are stale worktree references. Error: $_"
+        }
+
+        # Check if branch exists, suppressing command output
+        git rev-parse --verify --quiet $Branch *> $null 2> $null
+        
+        if ($LASTEXITCODE -eq 0) {
+            # Branch exists, but directory doesn't. Create worktree from existing branch.
+            Write-Host "Branch '$Branch' already exists. Creating worktree from existing branch..."
+            try {
+                git worktree add ../$Branch $Branch
+                Set-Location ../$Branch
+                Write-Host "Successfully created and switched to new worktree: $(Get-Location)"
+            } catch {
+                Write-Error "Failed to create worktree from existing branch '$Branch'. Error: $_"
+                return
+            }
+        } else {
+            # Branch does not exist. Create a new branch and worktree.
+            Write-Host "Branch '$Branch' not found. Creating new branch and git worktree..."
+            try {
+                git worktree add -B $Branch ../$Branch
+                Set-Location ../$Branch
+                Write-Host "Successfully created and switched to new worktree: $(Get-Location)"
+            } catch {
+                Write-Error "Failed to create worktree and new branch '$Branch'. Error: $_"
+                return
+            }
+        }
+    }
+
+    # After switching to the worktree, execute the equivalent of the -Name logic
+    $currentConfigPath = Get-ConfigPath -CustomPath $Config # Re-evaluate config path after changing directory
+    if (!(Test-ConfigExists -ConfigPath $currentConfigPath)) {
+        Write-Host "Configuration file not found. Creating default configuration..."
+        Create-Config -ConfigPath $currentConfigPath
+        Write-Host "Configuration created. Please edit the file to add your API keys and then run the command again."
+        Edit-Config -ConfigPath $currentConfigPath
+    } else {
+        Start-Configuration -ConfigPath $currentConfigPath -ConfigName $Branch
+    }
 }
 elseif ($Name) {
     if (!(Test-ConfigExists -ConfigPath $configPath)) {

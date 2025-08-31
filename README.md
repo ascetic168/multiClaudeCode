@@ -90,6 +90,14 @@ To start a specific configuration by name:
 .\mcc.ps1 -Name "Claude-Default"
 ```
 
+### Switch/Create Branch and Start
+
+To switch to (or create) a git worktree for a branch and start its corresponding configuration:
+```powershell
+.\mcc.ps1 -Branch "feature-branch"
+```
+This command streamlines development on different features. It automatically manages a git worktree for the specified branch and then launches the configuration from your `config.json` that has the same name as the branch.
+
 ### Start by Index
 
 To start a configuration by its index (1-based):

@@ -26,7 +26,7 @@ Multi Claude Code 視窗管理器是一個 PowerShell 指令碼，可讓您在�
    ```powershell
    Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
    ```
-3. （可選）將 `mcc.ps1` 複製到 PATH 環境變數中有指向到的目錄，這樣就可以在任意地方執行它：
+3. （可選）將 `mcc.ps1` 複製到 PATH 環境變數中的目錄，以便從任何位置執行：
 
 ## 設定說明
 
@@ -89,6 +89,14 @@ Multi Claude Code 視窗管理器是一個 PowerShell 指令碼，可讓您在�
 ```powershell
 .\mcc.ps1 -Name "Claude-Default"
 ```
+
+### 切換/建立分支並啟動
+
+切換到（或建立）一個 git worktree 分支並啟動其對應的設定：
+```powershell
+.\mcc.ps1 -Branch "feature-branch"
+```
+此指令透過自動管理指定分支的 git worktree，然後啟動 `config.json` 中具有相同名稱的設定，從而簡化不同功能的開發流程。
 
 ### 按索引啟動
 
