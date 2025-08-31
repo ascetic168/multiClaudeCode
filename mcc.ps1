@@ -77,13 +77,13 @@ function Get-DefaultConfig {
                 prompt = "Do nothing until I give further instructions. Always respond in Chinese."
             },
             @{
-                name = "DeepSeek-Default"
+                name = "frontend"
                 ANTHROPIC_AUTH_TOKEN = "your-api-key-here"
                 ANTHROPIC_BASE_URL = "https://api.deepseek.com/anthropic"
                 ANTHROPIC_MODEL = "deepseek-chat"
                 ANTHROPIC_SMALL_FAST_MODEL = "deepseek-chat"
                 command = "claude"
-                prompt = "Review project, give a short summary. Always respond in Chinese."
+                prompt = "You are a senior frontend developer.\n Always respond in Chinese.\n You will not change the files outside the frontend directory "
             }
         )
     }
