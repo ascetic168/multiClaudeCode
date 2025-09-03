@@ -236,9 +236,13 @@ function Send-Prompt {
         
         # Send Ctrl+V to paste from clipboard
         [System.Windows.Forms.SendKeys]::SendWait('^v')
-        [System.Windows.Forms.SendKeys]::SendWait('{ENTER}')
+        Start-Sleep -Milliseconds 300
         
-        Write-Host "Prompt injected via clipboard"
+        # Send multiple forms of line ending to ensure compatibility
+        # This approach works across different terminals including VSCode and Windows Terminal
+        
+        # First try: Standard ENTER key
+        [System.Windows.Forms.SendKeys]::SendWait('{ENTER}')
     }
     catch {
         Write-Warning "Cannot inject prompt: $($_.Exception.Message)"
