@@ -335,8 +335,13 @@ elseif ($Create) {
     Create-Config -ConfigPath $configPath
 }
 elseif ($Branch) {
-    $worktreePath = Join-Path (Get-Location).Path "..\$Branch"
+    # Get current directory name to use as project name prefix
+    $currentDir = (Get-Location).Path
+    $projectName = $currentDir.Split([System.IO.Path]::DirectorySeparatorChar, [System.StringSplitOptions]::RemoveEmptyEntries)[-1]
+    $worktreePath = Join-Path (Get-Location).Path "..\${projectName}_$Branch"
+    $oldWorktreePath = Join-Path (Get-Location).Path "..\$Branch"
     
+    # Check if directory exists with new naming convention first
     if (Test-Path $worktreePath) {
         Write-Host "Directory for branch '$Branch' exists. Switching..."
         try {
@@ -347,7 +352,22 @@ elseif ($Branch) {
             Write-Error "Failed to switch to worktree or branch '$Branch'. Error: $_"
             return
         }
-    } else {
+    } 
+    # Check if directory exists with old naming convention (for migration)
+    elseif (Test-Path $oldWorktreePath) {
+        Write-Host "Found directory with old naming convention. Migrating to new format..."
+        try {
+            # Rename the directory to new format
+            Rename-Item -Path $oldWorktreePath -NewName "${projectName}_$Branch"
+            Set-Location $worktreePath
+            Write-Host "Migrated and switched to directory: $(Get-Location)"
+            git switch $Branch
+        } catch {
+            Write-Error "Failed to migrate worktree directory. Error: $_"
+            return
+        }
+    }
+    else {
         Write-Host "Directory '$worktreePath' not found."
         
         # Prune stale worktrees first to prevent errors from leftover git metadata.
@@ -365,8 +385,8 @@ elseif ($Branch) {
             # Branch exists, but directory doesn't. Create worktree from existing branch.
             Write-Host "Branch '$Branch' already exists. Creating worktree from existing branch..."
             try {
-                git worktree add ../$Branch $Branch
-                Set-Location ../$Branch
+                git worktree add ../${projectName}_$Branch $Branch
+                Set-Location ../${projectName}_$Branch
                 Write-Host "Successfully created and switched to new worktree: $(Get-Location)"
             } catch {
                 Write-Error "Failed to create worktree from existing branch '$Branch'. Error: $_"
@@ -376,8 +396,8 @@ elseif ($Branch) {
             # Branch does not exist. Create a new branch and worktree.
             Write-Host "Branch '$Branch' not found. Creating new branch and git worktree..."
             try {
-                git worktree add -B $Branch ../$Branch
-                Set-Location ../$Branch
+                git worktree add -B $Branch ../${projectName}_$Branch
+                Set-Location ../${projectName}_$Branch
                 Write-Host "Successfully created and switched to new worktree: $(Get-Location)"
             } catch {
                 Write-Error "Failed to create worktree and new branch '$Branch'. Error: $_"

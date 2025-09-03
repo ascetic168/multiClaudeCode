@@ -98,6 +98,8 @@ Multi Claude Code 窗口管理器是一个 PowerShell 脚本，可让您在独�
 ```
 此命令通过自动管理指定分支的 git worktree，然后启动 `config.json` 中具有相同名称的配置，从而简化不同功能的开发流程。
 
+worktree 目录使用 `{项目名称}_{分支名称}` 格式创建（例如 `multiClaudeCode_feature-branch`），以避免不同项目中相同分支名称的冲突。
+
 ### 按索引启动
 
 按索引（从 1 开始）启动配置：

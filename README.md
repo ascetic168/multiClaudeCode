@@ -98,6 +98,8 @@ To switch to (or create) a git worktree for a branch and start its corresponding
 ```
 This command streamlines development on different features. It automatically manages a git worktree for the specified branch and then launches the configuration from your `config.json` that has the same name as the branch.
 
+The worktree directory is created using the format `{projectName}_{branchName}` (e.g., `multiClaudeCode_feature-branch`) to avoid conflicts between different projects with the same branch names.
+
 ### Start by Index
 
 To start a configuration by its index (1-based):
